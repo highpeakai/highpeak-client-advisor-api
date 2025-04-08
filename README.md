@@ -1,2 +1,2 @@
 # highpeak-client-advisor-api
-HighPeak open spec api documentation
+HighPeak api documentation
