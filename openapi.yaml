@@ -1,0 +1,307 @@
+openapi: 3.0.3
+info:
+  title: Client and Advisor API
+  description: API for managing Client and Advisor objects
+  version: 1.0.0
+paths:
+  /clients:
+    get:
+      summary: Get a client by ID
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Client retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "404":
+          description: Client not found
+    put:
+      summary: Creates a new client
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Client"
+      responses:
+        "200":
+          description: Client created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    patch:
+      summary: Update a client by ID
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Client updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    delete:
+      summary: Delete a client by ID
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Client deleted successfully
+  /clients/all:
+    post:
+      summary: Retrieve a list of clients with pagination and sorting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  minimum: 1
+                  default: 10
+                cursor:
+                  type: object
+                  properties:
+                    user_role:
+                      type: string
+                      enum: [client]
+                    id:
+                      type: string
+                      format: uuid
+                sortBy:
+                  type: string
+                  enum: [created, last_updated, first_name, last_name]
+                ascending:
+                  type: boolean
+              required:
+                - limit
+                - sortBy
+                - ascending
+      responses:
+        "200":
+          description: A list of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+
+  /advisors:
+    get:
+      summary: Get an advisor by ID
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Advisor retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Advisor"
+        "404":
+          description: Advisor not found
+    options:
+      summary: Get available HTTP methods for the /advisors endpoint
+      responses:
+        "200":
+          description: Successful response with allowed HTTP methods
+          headers:
+            Allow:
+              schema:
+                type: string
+    put:
+      summary: Create an advisor
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Advisor"
+      responses:
+        "200":
+          description: Advisor replaced successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Advisor"
+    patch:
+      summary: Update an advisor by ID
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Advisor updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Advisor"
+    delete:
+      summary: Delete an advisor by ID
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Advisor deleted successfully
+  /advisors/all:
+    get:
+      summary: Retrieve a list of all advisors
+      responses:
+        "200":
+          description: A list of advisors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Advisor"
+
+components:
+  schemas:
+    Client:
+      type: object
+      properties:
+        last_updated:
+          type: string
+          format: date-time
+        advisor_id:
+          type: string
+          format: uuid
+        last_name:
+          type: string
+        first_name:
+          type: string
+        created:
+          type: string
+          format: date-time
+        phone_number:
+          type: string
+        is_active:
+          type: boolean
+        user_role:
+          type: string
+          enum:
+            - client
+        email:
+          type: string
+          format: email
+        id:
+          type: string
+          format: uuid
+        scenarios:
+          type: array
+          items:
+            type: object
+        dependents:
+          type: array
+          items:
+            type: object
+      required:
+        - last_updated
+        - advisor_id
+        - last_name
+        - first_name
+        - created
+        - is_active
+        - user_role
+        - email
+        - id
+        - scenarios
+        - dependents
+    Advisor:
+      type: object
+      properties:
+        last_updated:
+          type: string
+          format: date-time
+        last_name:
+          type: string
+        user_role:
+          type: string
+          enum:
+            - advisor
+        email:
+          type: string
+          format: email
+        id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+      required:
+        - last_updated
+        - last_name
+        - user_role
+        - email
+        - id
+        - first_name
+  securitySchemes:
+    highpeak-userpool-authorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: cognito_user_pools
