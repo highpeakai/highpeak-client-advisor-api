@@ -121,6 +121,198 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Client"
+  /clients/import:
+    post:
+      summary: Import clients from a file
+      description: Accepts an Excel or CSV file with columns FirstName, LastName, and Email to create client records. Requires an advisor ID as a query parameter.
+      parameters:
+        - name: advisor_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: File processed successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: File processed and stored successfully
+        "400":
+          description: Invalid file format, missing fields, or advisor_id not provided
+  /clients/consent:
+    post:
+      summary: Invite a client to participate
+      description: Accepts a JSON object with ID and privacy acknowledgement, returns a thank you message.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                privacyAcknowledged:
+                  type: boolean
+              required:
+                - id
+                - privacyAcknowledged
+      responses:
+        "200":
+          description: Invitation response
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Thank you for participating in HighPeak's Personalized Cost of Care Estimator Questionnaire!
+  /clients/invite:
+    post:
+      summary: Send survey invite to a client
+      description: Sends an email invitation to a client with details provided in the request body.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                client_email:
+                  type: string
+                  format: email
+                advisor_email:
+                  type: string
+                  format: email
+                email_body:
+                  type: string
+              required:
+                - subject
+                - first_name
+                - last_name
+                - client_email
+                - advisor_email
+                - email_body
+      responses:
+        "200":
+          description: Survey invite sent
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Survey invite sent successfully!
+  /dependents:
+    put:
+      summary: Add or update a dependent
+      description: Adds a dependent to a client sponsor.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                sponsor_id:
+                  type: integer
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                relationship:
+                  type: string
+                phone_number:
+                  type: integer
+                last_updated:
+                  type: string
+                  format: date-time
+                created:
+                  type: string
+                  format: date-time
+                is_active:
+                  type: boolean
+              required:
+                - id
+                - sponsor_id
+                - first_name
+                - last_name
+                - email
+                - relationship
+                - phone_number
+                - last_updated
+                - created
+                - is_active
+      responses:
+        "200":
+          description: Dependent successfully added
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Dependent add to client
+    get:
+      summary: Retrieve dependents by sponsor ID
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: The sponsor/client ID to retrieve dependents for
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A list of dependents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    sponsor_id:
+                      type: integer
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    email:
+                      type: string
+                      format: email
+                    relationship:
+                      type: string
+                    phone_number:
+                      type: integer
+                    last_updated:
+                      type: string
+                      format: date-time
+                    created:
+                      type: string
+                      format: date-time
+                    is_active:
+                      type: boolean
 
   /advisors:
     get:
@@ -219,6 +411,57 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Advisor"
+  /advisors/import:
+    post:
+      summary: Import advisors from a file
+      description: Accepts an Excel or CSV file with columns FirstName, LastName, and Email to create advisor records.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: File processed successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: File processed and stored successfully
+        "400":
+          description: Invalid file format or missing required fields
+  /advisors/reset:
+    post:
+      summary: Reset advisor password
+      description: Accepts an advisor ID and email to reset the user password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                email:
+                  type: string
+                  format: email
+              required:
+                - id
+                - email
+      responses:
+        "200":
+          description: Advisor password reset successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: User temporary password reset
 
 components:
   schemas:
