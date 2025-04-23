@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: Client and Advisor API
-  description: API for managing Client and Advisor objects
+  title: HighPeak Client and Advisor API.
+  description: Use the API to create and manage Advisors. All resources require authentication. Base URL for all resources is https://api.highpeak.ai
   version: 1.0.0
 paths:
   /clients:
