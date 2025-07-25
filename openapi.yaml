@@ -22,19 +22,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Client'
+              $ref: "#/components/schemas/Client"
       responses:
-        '201':
+        "201":
           description: Client created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Client'
+                $ref: "#/components/schemas/Client"
     options:
       tags: [Clients]
       summary: Get available HTTP methods for the /clients endpoint
       responses:
-        '200':
+        "200":
           description: Successful response with allowed HTTP methods
           headers:
             Allow:
@@ -55,14 +55,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Client'
+              $ref: "#/components/schemas/Client"
       responses:
-        '200':
+        "200":
           description: Client replaced successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Client'
+                $ref: "#/components/schemas/Client"
     patch:
       tags: [Clients]
       summary: Update a client by ID
@@ -81,12 +81,12 @@ paths:
               type: object
               additionalProperties: true
       responses:
-        '200':
+        "200":
           description: Client updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Client'
+                $ref: "#/components/schemas/Client"
     delete:
       tags: [Clients]
       summary: Delete a client by ID
@@ -98,7 +98,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '204':
+        "204":
           description: Client deleted successfully
   /advisors:
     post:
@@ -109,19 +109,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Advisor'
+              $ref: "#/components/schemas/Advisor"
       responses:
-        '201':
+        "201":
           description: Advisor created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Advisor'
+                $ref: "#/components/schemas/Advisor"
     options:
       tags: [Advisors]
       summary: Get available HTTP methods for the /advisors endpoint
       responses:
-        '200':
+        "200":
           description: Successful response with allowed HTTP methods
           headers:
             Allow:
@@ -142,14 +142,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Advisor'
+              $ref: "#/components/schemas/Advisor"
       responses:
-        '200':
+        "200":
           description: Advisor replaced successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Advisor'
+                $ref: "#/components/schemas/Advisor"
     patch:
       tags: [Advisors]
       summary: Update an advisor by ID
@@ -168,12 +168,12 @@ paths:
               type: object
               additionalProperties: true
       responses:
-        '200':
+        "200":
           description: Advisor updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Advisor'
+                $ref: "#/components/schemas/Advisor"
     delete:
       tags: [Advisors]
       summary: Delete an advisor by ID
@@ -185,20 +185,42 @@ paths:
             type: string
             format: uuid
       responses:
-        '204':
+        "204":
           description: Advisor deleted successfully
-  /ltc/queries/probability:
+  /  /ltc/queries/probability:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care need probability
       description: Predicts the probability of needing long-term care.
       operationId: queryProbability
+      parameters:
+        - name: age
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: gender
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: zipcode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: overall_health_rating
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [excellent, very good, good, fair, poor]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LtcQueryRequiredInput'
+              $ref: "#/components/schemas/LtcQueryRequiredInput"
       responses:
         "200":
           description: Predicted probability distribution for long-term care
@@ -232,12 +254,34 @@ paths:
       summary: Estimate long-term care service type probabilities
       description: Predicts probabilities for different types of long-term care services.
       operationId: queryServiceType
+      parameters:
+        - name: age
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: gender
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: zipcode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: overall_health_rating
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [excellent, very good, good, fair, poor]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LtcQueryRequiredInput'
+              $ref: "#/components/schemas/LtcQueryRequiredInput"
       responses:
         "200":
           description: Predicted service type distribution for long-term care
@@ -292,12 +336,34 @@ paths:
       summary: Estimate long-term care costs
       description: Predicts cost distribution for long-term care.
       operationId: queryCost
+      parameters:
+        - name: age
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: gender
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: zipcode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: overall_health_rating
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [excellent, very good, good, fair, poor]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LtcQueryRequiredInput'
+              $ref: "#/components/schemas/LtcQueryRequiredInput"
       responses:
         "200":
           description: Predicted cost distribution for long-term care
@@ -313,7 +379,8 @@ paths:
                         type: array
                         items:
                           type: number
-                        example: [560, 1170, 1870, 2690, 3640, 4810, 6320, 8450, 12080]
+                        example:
+                          [560, 1170, 1870, 2690, 3640, 4810, 6320, 8450, 12080]
                       cost_std:
                         type: array
                         items:
@@ -337,12 +404,34 @@ paths:
       summary: Estimate long-term care duration
       description: Predicts the duration of long-term care usage.
       operationId: queryDuration
+      parameters:
+        - name: age
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: gender
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: zipcode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: overall_health_rating
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [excellent, very good, good, fair, poor]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LtcQueryRequiredInput'
+              $ref: "#/components/schemas/LtcQueryRequiredInput"
       responses:
         "200":
           description: Predicted duration distribution for long-term care
@@ -382,12 +471,34 @@ paths:
       summary: Estimate longevity distribution
       description: Predicts age-based longevity probabilities.
       operationId: queryLongevity
+      parameters:
+        - name: age
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: gender
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: zipcode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: overall_health_rating
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [excellent, very good, good, fair, poor]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LtcQueryRequiredInput'
+              $ref: "#/components/schemas/LtcQueryRequiredInput"
       responses:
         "200":
           description: Predicted longevity distribution for long-term care
