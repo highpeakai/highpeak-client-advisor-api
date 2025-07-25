@@ -198,7 +198,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LtcQueryInput'
+              $ref: '#/components/schemas/LtcQueryRequiredInput'
       responses:
         "200":
           description: Predicted probability distribution for long-term care
@@ -237,7 +237,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LtcQueryInput'
+              $ref: '#/components/schemas/LtcQueryRequiredInput'
       responses:
         "200":
           description: Predicted service type distribution for long-term care
@@ -297,7 +297,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LtcQueryInput'
+              $ref: '#/components/schemas/LtcQueryRequiredInput'
       responses:
         "200":
           description: Predicted cost distribution for long-term care
@@ -342,7 +342,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LtcQueryInput'
+              $ref: '#/components/schemas/LtcQueryRequiredInput'
       responses:
         "200":
           description: Predicted duration distribution for long-term care
@@ -387,7 +387,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LtcQueryInput'
+              $ref: '#/components/schemas/LtcQueryRequiredInput'
       responses:
         "200":
           description: Predicted longevity distribution for long-term care
@@ -497,8 +497,13 @@ components:
         - email
         - id
         - first_name
-    LtcQueryInput:
+    LtcQueryRequiredInput:
       type: object
+      required:
+        - age
+        - gender
+        - zipcode
+        - overall_health_rating
       properties:
         age:
           type: integer
@@ -509,73 +514,3 @@ components:
         overall_health_rating:
           type: string
           enum: [excellent, very good, good, fair, poor]
-        marry:
-          type: string
-        job:
-          type: string
-        body_weight:
-          type: number
-        body_height_ft:
-          type: number
-        body_height_in:
-          type: number
-        smoke:
-          type: string
-        drink_alcohol:
-          type: string
-        dental_visit:
-          type: string
-        troubled_with_pain:
-          type: string
-        emotional_problems:
-          type: string
-        cognitive_limitation:
-          type: string
-        depression:
-          type: string
-        arthritis:
-          type: string
-        heart_condition:
-          type: string
-        high_cholesterol:
-          type: string
-        diabetes:
-          type: string
-        high_blood_pressure:
-          type: string
-        stroke:
-          type: string
-        lung_condition:
-          type: string
-        alzheimers:
-          type: string
-        dementia:
-          type: string
-        cancer:
-          type: string
-        income:
-          type: number
-        use_drugs:
-          type: string
-        blood_disorder:
-          type: string
-        autoimmune_disorder:
-          type: string
-        cyst_polyp:
-          type: string
-        liver_disease:
-          type: string
-        renal:
-          type: string
-        STD:
-          type: string
-        surgery:
-          type: string
-        take_rx_drug:
-          type: string
-        overall_rating:
-          type: string
-        n_samples:
-          type: integer
-        _comment:
-          type: string
