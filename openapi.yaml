@@ -3,8 +3,6 @@ info:
   title: Client and Advisor API
   description: API for managing Client and Advisor objects
   version: 1.0.0
-security:
-  - highpeak-userpool-authorizer: []
 tags:
   - name: Clients
     description: Endpoints for managing clients
@@ -530,6 +528,22 @@ paths:
         "500":
           description: Internal server error
 components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: X-API-Key   # the header name users will send
+
+  parameters:
+    X-Custom-Header:
+      name: X-Custom-Header
+      in: header
+      description: Arbitrary custom header for testing
+      required: false
+      schema:
+        type: string
+  security:
+    - highpeak-userpool-authorizer: [ ]
   schemas:
     Client:
       type: object
