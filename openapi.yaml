@@ -1,8 +1,11 @@
 openapi: 3.0.3
 info:
-  title: Client and Advisor API
-  description: API for managing Client and Advisor objects
+  title: HighPeak API
+  description: API for managing Client/Advisor objects and long term care model queries.
   version: 1.0.0
+servers:
+  - url: https://api.key.highpeak.ai
+    description: Production server
 tags:
   - name: Clients
     description: Endpoints for managing clients
@@ -185,7 +188,7 @@ paths:
       responses:
         "204":
           description: Advisor deleted successfully
-  /  /ltc/queries/probability:
+  /ltc/queries/probability:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care need probability
