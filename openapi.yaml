@@ -194,28 +194,6 @@ paths:
       summary: Estimate long-term care need probability
       description: Predicts the probability of needing long-term care.
       operationId: queryProbability
-      parameters:
-        - name: age
-          in: query
-          required: true
-          schema:
-            type: integer
-        - name: gender
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: zipcode
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: overall_health_rating
-          in: query
-          required: true
-          schema:
-            type: string
-            enum: [excellent, very good, good, fair, poor]
       requestBody:
         required: true
         content:
@@ -255,28 +233,6 @@ paths:
       summary: Estimate long-term care service type probabilities
       description: Predicts probabilities for different types of long-term care services.
       operationId: queryServiceType
-      parameters:
-        - name: age
-          in: query
-          required: true
-          schema:
-            type: integer
-        - name: gender
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: zipcode
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: overall_health_rating
-          in: query
-          required: true
-          schema:
-            type: string
-            enum: [excellent, very good, good, fair, poor]
       requestBody:
         required: true
         content:
@@ -337,28 +293,6 @@ paths:
       summary: Estimate long-term care costs
       description: Predicts cost distribution for long-term care.
       operationId: queryCost
-      parameters:
-        - name: age
-          in: query
-          required: true
-          schema:
-            type: integer
-        - name: gender
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: zipcode
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: overall_health_rating
-          in: query
-          required: true
-          schema:
-            type: string
-            enum: [excellent, very good, good, fair, poor]
       requestBody:
         required: true
         content:
@@ -405,28 +339,6 @@ paths:
       summary: Estimate long-term care duration
       description: Predicts the duration of long-term care usage.
       operationId: queryDuration
-      parameters:
-        - name: age
-          in: query
-          required: true
-          schema:
-            type: integer
-        - name: gender
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: zipcode
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: overall_health_rating
-          in: query
-          required: true
-          schema:
-            type: string
-            enum: [excellent, very good, good, fair, poor]
       requestBody:
         required: true
         content:
@@ -472,28 +384,6 @@ paths:
       summary: Estimate longevity distribution
       description: Predicts age-based longevity probabilities.
       operationId: queryLongevity
-      parameters:
-        - name: age
-          in: query
-          required: true
-          schema:
-            type: integer
-        - name: gender
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: zipcode
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: overall_health_rating
-          in: query
-          required: true
-          schema:
-            type: string
-            enum: [excellent, very good, good, fair, poor]
       requestBody:
         required: true
         content:
@@ -526,6 +416,48 @@ paths:
                         items:
                           type: number
                         example: [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+        "400":
+          description: Invalid request body
+        "500":
+          description: Internal server error
+  /ltc/queries/healthcare_cost:
+    post:
+      tags: [ LTC Queries ]
+      summary: Estimate longevity distribution
+      description: Predicted cost distribution for health care.
+      operationId: queryLongevity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LtcQueryRequiredInput"
+      responses:
+        "200":
+          description: Predicted longevity distribution for long-term care
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  longevity:
+                    type: object
+                    properties:
+                      age_mean:
+                        type: array
+                        items:
+                          type: number
+                        example: [ 74, 78, 81, 84, 86, 88, 90, 92, 95 ]
+                      age_std:
+                        type: array
+                        items:
+                          type: number
+                        example: [ 2, 3, 3, 3, 3, 3, 3, 3, 2 ]
+                      proba:
+                        type: array
+                        items:
+                          type: number
+                        example: [ 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1 ]
         "400":
           description: Invalid request body
         "500":
