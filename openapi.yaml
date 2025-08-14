@@ -4,7 +4,7 @@ info:
   description: API for managing Client/Advisor objects and long term care model queries.
   version: 1.0.0
 servers:
-  - url: https://api.key.highpeak.ai
+  - url: https://api.key.prod.highpeak.ai
     description: Production server
 tags:
   - name: Clients
