@@ -188,7 +188,7 @@ paths:
       responses:
         "204":
           description: Advisor deleted successfully
-  /ltc/queries/probability:
+  /queries/ltc/probability:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care need probability
@@ -227,7 +227,7 @@ paths:
           description: Invalid request body
         "500":
           description: Internal server error
-  /ltc/queries/type:
+  /queries/ltc/type:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care service type probabilities
@@ -287,7 +287,7 @@ paths:
           description: Invalid request body
         "500":
           description: Internal server error
-  /ltc/queries/cost:
+  /queries/ltc/cost:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care costs
@@ -333,7 +333,7 @@ paths:
           description: Invalid request body
         "500":
           description: Internal server error
-  /ltc/queries/duration:
+  /queries/ltc/duration:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care duration
@@ -378,7 +378,7 @@ paths:
           description: Invalid request body
         "500":
           description: Internal server error
-  /ltc/queries/longevity:
+  /queries/ltc/longevity:
     post:
       tags: [LTC Queries]
       summary: Estimate longevity distribution
@@ -420,7 +420,7 @@ paths:
           description: Invalid request body
         "500":
           description: Internal server error
-  /ltc/queries/healthcare_cost:
+  /queries/ltc/healthcare_cost:
     post:
       tags: [ LTC Queries ]
       summary: Estimate longevity distribution
