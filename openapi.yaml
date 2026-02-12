@@ -13,6 +13,10 @@ tags:
     description: Endpoints for managing advisors
   - name: LTC Queries
     description: Endpoints for long-term care probability, type, cost, duration, and longevity predictions
+
+security:
+  - api_key: []
+
 paths:
   /clients:
     post:
@@ -425,7 +429,7 @@ paths:
       tags: [ LTC Queries ]
       summary: Estimate longevity distribution
       description: Predicted cost distribution for health care.
-      operationId: queryLongevity
+      operationId: queryHealtchareCost
       requestBody:
         required: true
         content:
@@ -477,8 +481,6 @@ components:
       required: false
       schema:
         type: string
-  security:
-    - highpeak-userpool-authorizer: [ ]
   schemas:
     Client:
       type: object
@@ -698,11 +700,9 @@ components:
           type: string
         overall_health_rating:
           type: string
-        enum: [ excellent, very good, good, fair, poor ]
+          enum: [ excellent, very good, good, fair, poor ]
         n_samples:
           type: integer
-        gender:
-          type: string
         marry:
           type: boolean
         income:
