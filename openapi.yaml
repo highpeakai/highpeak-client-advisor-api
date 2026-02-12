@@ -199,7 +199,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LtcQueryRequiredInput"
+              $ref: "#/components/schemas/LtcProbabilityInput"
       responses:
         "200":
           description: Predicted probability distribution for long-term care
@@ -238,7 +238,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LtcQueryRequiredInput"
+              $ref: "#/components/schemas/LtcTypeInput"
       responses:
         "200":
           description: Predicted service type distribution for long-term care
@@ -298,7 +298,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LtcQueryRequiredInput"
+              $ref: "#/components/schemas/LtcCostInput"
       responses:
         "200":
           description: Predicted cost distribution for long-term care
@@ -344,7 +344,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LtcQueryRequiredInput"
+              $ref: "#/components/schemas/LtcDurationInput"
       responses:
         "200":
           description: Predicted duration distribution for long-term care
@@ -389,7 +389,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LtcQueryRequiredInput"
+              $ref: "#/components/schemas/LtcLongevityInput"
       responses:
         "200":
           description: Predicted longevity distribution for long-term care
@@ -431,7 +431,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LtcQueryRequiredInput"
+              $ref: "#/components/schemas/LtcHealthcareCostInput"
       responses:
         "200":
           description: Predicted longevity distribution for long-term care
@@ -557,7 +557,7 @@ components:
         - email
         - id
         - first_name
-    LtcQueryRequiredInput:
+    LtcProbabilityInput:
       type: object
       required:
         - age
@@ -573,4 +573,287 @@ components:
           type: string
         overall_health_rating:
           type: string
-          enum: [excellent, very good, good, fair, poor]
+          enum: [ excellent, very good, good, fair, poor ]
+        body_weight:
+          type: number
+          description: Body weight in pounds
+        troubled_with_pain:
+          type: boolean
+        job:
+          type: string
+        arthritis:
+          type: boolean
+        cognitive_limitation:
+          type: boolean
+        depression:
+          type: boolean
+        emotional_problems:
+          type: boolean
+        marry:
+          type: boolean
+        smoke:
+          type: boolean
+        heart_condition:
+          type: boolean
+        high_cholesterol:
+          type: boolean
+        diabetes:
+          type: boolean
+        high_blood_pressure:
+          type: boolean
+        stroke:
+          type: boolean
+        lung_condition:
+          type: boolean
+        alzheimers:
+          type: boolean
+        dementia:
+          type: boolean
+        cancer:
+          type: boolean
+        drink_alcohol:
+          type: boolean
+        body_height_in:
+          type: number
+          description: Body height in inches
+        body_height_ft:
+          type: number
+          description: Body height in feet
+    LtcTypeInput:
+      type: object
+      required:
+        - age
+        - gender
+        - zipcode
+        - overall_health_rating
+      properties:
+        age:
+          type: integer
+        gender:
+          type: string
+        zipcode:
+          type: string
+        overall_health_rating:
+          type: string
+          enum: [ excellent, very good, good, fair, poor ]
+        body_weight:
+          type: number
+          description: Body weight in pounds
+        troubled_with_pain:
+          type: boolean
+        job:
+          type: string
+        arthritis:
+          type: boolean
+        cognitive_limitation:
+          type: boolean
+        depression:
+          type: boolean
+        emotional_problems:
+          type: boolean
+        marry:
+          type: boolean
+        smoke:
+          type: boolean
+        heart_condition:
+          type: boolean
+        high_cholesterol:
+          type: boolean
+        diabetes:
+          type: boolean
+        high_blood_pressure:
+          type: boolean
+        stroke:
+          type: boolean
+        lung_condition:
+          type: boolean
+        alzheimers:
+          type: boolean
+        dementia:
+          type: boolean
+        cancer:
+          type: boolean
+        drink_alcohol:
+          type: boolean
+        body_height_in:
+          type: number
+          description: Body height in inches
+        body_height_ft:
+          type: number
+          description: Body height in feet
+    LtcCostInput:
+      type: object
+      required:
+        - zipcode
+      properties:
+        zipcode:
+          type: string
+    LtcDurationInput:
+      type: object
+      required:
+        - gender
+        - overall_health_rating
+      properties:
+        gender:
+          type: string
+        overall_health_rating:
+          type: string
+        enum: [ excellent, very good, good, fair, poor ]
+        n_samples:
+          type: integer
+        gender:
+          type: string
+        marry:
+          type: boolean
+        income:
+          type: number
+        overall_rating:
+          type: string
+        alzheimers:
+          type: boolean
+        arthritis:
+          type: boolean
+        troubled_with_pain:
+          type: boolean
+        heart_condition:
+          type: boolean
+        stroke:
+          type: boolean
+        high_cholesterol:
+          type: boolean
+        high_blood_pressure:
+          type: boolean
+        depression:
+          type: boolean
+        emotional_problems:
+          type: boolean
+        dementia:
+          type: boolean
+        cancer:
+          type: boolean
+        diabetes:
+          type: boolean
+    LtcLongevityInput:
+      type: object
+      required:
+        - age
+        - gender
+        - zipcode
+        - overall_health_rating
+      properties:
+        age:
+          type: integer
+        gender:
+          type: string
+        zipcode:
+          type: string
+        overall_health_rating:
+          type: string
+          enum: [ excellent, very good, good, fair, poor ]
+        body_weight:
+          type: number
+          description: Body weight in pounds
+        troubled_with_pain:
+          type: boolean
+        job:
+          type: string
+        arthritis:
+          type: boolean
+        cognitive_limitation:
+          type: boolean
+        depression:
+          type: boolean
+        emotional_problems:
+          type: boolean
+        marry:
+          type: boolean
+        smoke:
+          type: boolean
+        heart_condition:
+          type: boolean
+        high_cholesterol:
+          type: boolean
+        diabetes:
+          type: boolean
+        high_blood_pressure:
+          type: boolean
+        stroke:
+          type: boolean
+        lung_condition:
+          type: boolean
+        alzheimers:
+          type: boolean
+        dementia:
+          type: boolean
+        cancer:
+          type: boolean
+        drink_alcohol:
+          type: boolean
+        body_height_in:
+          type: number
+          description: Body height in inches
+        body_height_ft:
+          type: number
+          description: Body height in feet
+    LtcHealthcareCostInput:
+      type: object
+      required:
+        - age
+        - gender
+        - zipcode
+        - overall_health_rating
+      properties:
+        age:
+          type: integer
+        gender:
+          type: string
+        zipcode:
+          type: string
+        overall_health_rating:
+          type: string
+          enum: [ excellent, very good, good, fair, poor ]
+        body_weight:
+          type: number
+          description: Body weight in pounds
+        troubled_with_pain:
+          type: boolean
+        job:
+          type: string
+        arthritis:
+          type: boolean
+        cognitive_limitation:
+          type: boolean
+        depression:
+          type: boolean
+        emotional_problems:
+          type: boolean
+        marry:
+          type: boolean
+        smoke:
+          type: boolean
+        heart_condition:
+          type: boolean
+        high_cholesterol:
+          type: boolean
+        diabetes:
+          type: boolean
+        high_blood_pressure:
+          type: boolean
+        stroke:
+          type: boolean
+        lung_condition:
+          type: boolean
+        alzheimers:
+          type: boolean
+        dementia:
+          type: boolean
+        cancer:
+          type: boolean
+        drink_alcohol:
+          type: boolean
+        body_height_in:
+          type: number
+          description: Body height in inches
+        body_height_ft:
+          type: number
+          description: Body height in feet
