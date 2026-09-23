@@ -4,8 +4,12 @@ info:
   description: API for managing Client/Advisor objects and long term care model queries.
   version: 1.0.0
 servers:
-  - url: https://api.key.prod.highpeak.ai
+  - url: https://api.prod.highpeak.ai
     description: Production server
+  - url: https://api.qa.highpeak.ai
+    description: QA server
+  - url: https://api.dev.highpeak.ai
+    description: Dev server
 tags:
   - name: Clients
     description: Endpoints for managing clients
@@ -231,7 +235,7 @@ paths:
           description: Invalid request body
         "500":
           description: Internal server error
-  /queries/ltc/type:
+  /queries/ltc/service_type:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care service type probabilities
@@ -294,8 +298,8 @@ paths:
   /queries/ltc/cost:
     post:
       tags: [LTC Queries]
-      summary: Estimate long-term care costs
-      description: Predicts cost distribution for long-term care.
+      summary: Estimate long-term care costs by facility type
+      description: Returns the monthly cost of home health care, assisted living, and nursing home care for the user's location.
       operationId: queryCost
       requestBody:
         required: true
@@ -305,34 +309,24 @@ paths:
               $ref: "#/components/schemas/LtcCostInput"
       responses:
         "200":
-          description: Predicted cost distribution for long-term care
+          description: Monthly cost by long-term care service type
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  hc_cost:
-                    type: object
-                    properties:
-                      cost_mean:
-                        type: array
-                        items:
-                          type: number
-                        example:
-                          [560, 1170, 1870, 2690, 3640, 4810, 6320, 8450, 12080]
-                      cost_std:
-                        type: array
-                        items:
-                          type: number
-                        example: [30, 60, 100, 140, 190, 250, 330, 440, 620]
-                      proba:
-                        type: array
-                        items:
-                          type: number
-                        example: [90, 80, 70, 60, 50, 40, 29, 19, 10]
-                      count:
-                        type: integer
-                        example: 10000
+                  HHC:
+                    type: number
+                    description: Home Health Care monthly cost
+                    example: 6769.0
+                  ALF:
+                    type: number
+                    description: Assisted Living Facility monthly cost
+                    example: 7400.0
+                  NH:
+                    type: number
+                    description: Nursing Home monthly cost
+                    example: 12159.0
         "400":
           description: Invalid request body
         "500":
@@ -357,32 +351,35 @@ paths:
               schema:
                 type: object
                 properties:
-                  hc_duration:
+                  ltc_duration:
                     type: object
                     properties:
-                      duration_mean:
+                      dur_mean:
                         type: array
                         items:
                           type: number
-                        example: [1, 2, 3, 4, 5]
-                      duration_std:
+                        example: [13, 27, 43, 62, 84, 111, 146, 196, 280]
+                      dur_std:
                         type: array
                         items:
                           type: number
-                        example: [0.5, 0.7, 1.0, 1.2, 1.5]
+                        example: [5, 11, 17, 25, 34, 45, 59, 78, 112]
                       proba:
                         type: array
                         items:
                           type: number
-                        example: [90, 75, 60, 45, 30]
+                        example: [90, 80, 70, 60, 50, 40, 29, 19, 10]
                       count:
                         type: integer
-                        example: 10000
+                        example: 100000
+                      unit:
+                        type: string
+                        example: "months"
         "400":
           description: Invalid request body
         "500":
           description: Internal server error
-  /queries/ltc/longevity:
+  /queries/longevity/estimate:
     post:
       tags: [LTC Queries]
       summary: Estimate longevity distribution
@@ -424,12 +421,12 @@ paths:
           description: Invalid request body
         "500":
           description: Internal server error
-  /queries/ltc/healthcare_cost:
+  /queries/healthcare/cost:
     post:
-      tags: [ LTC Queries ]
-      summary: Estimate longevity distribution
-      description: Predicted cost distribution for health care.
-      operationId: queryHealtchareCost
+      tags: [LTC Queries]
+      summary: Estimate healthcare cost distribution
+      description: Predicted monthly healthcare cost distribution.
+      operationId: queryHealthcareCost
       requestBody:
         required: true
         content:
@@ -438,30 +435,33 @@ paths:
               $ref: "#/components/schemas/LtcHealthcareCostInput"
       responses:
         "200":
-          description: Predicted longevity distribution for long-term care
+          description: Predicted healthcare cost distribution
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  longevity:
+                  hc_cost:
                     type: object
                     properties:
-                      age_mean:
+                      cost_mean:
                         type: array
                         items:
                           type: number
-                        example: [ 74, 78, 81, 84, 86, 88, 90, 92, 95 ]
-                      age_std:
+                        example: [560, 1170, 1870, 2690, 3640, 4810, 6320, 8450, 12080]
+                      cost_std:
                         type: array
                         items:
                           type: number
-                        example: [ 2, 3, 3, 3, 3, 3, 3, 3, 2 ]
+                        example: [30, 60, 100, 140, 190, 250, 330, 440, 620]
                       proba:
                         type: array
                         items:
                           type: number
-                        example: [ 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1 ]
+                        example: [90, 80, 70, 60, 50, 40, 29, 19, 10]
+                      count:
+                        type: integer
+                        example: 10000
         "400":
           description: Invalid request body
         "500":
@@ -565,7 +565,7 @@ components:
         - age
         - gender
         - zipcode
-        - overall_health_rating
+        - overall_rating
       properties:
         age:
           type: integer
@@ -573,48 +573,82 @@ components:
           type: string
         zipcode:
           type: string
-        overall_health_rating:
+        overall_rating:
           type: string
           enum: [ excellent, very good, good, fair, poor ]
         body_weight:
           type: number
           description: Body weight in pounds
         troubled_with_pain:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         job:
           type: string
         arthritis:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         cognitive_limitation:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         depression:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         emotional_problems:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         marry:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "married"
         smoke:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         heart_condition:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         high_cholesterol:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         diabetes:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         high_blood_pressure:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         stroke:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         lung_condition:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         alzheimers:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         dementia:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         cancer:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         drink_alcohol:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         body_height_in:
           type: number
           description: Body height in inches
@@ -627,7 +661,7 @@ components:
         - age
         - gender
         - zipcode
-        - overall_health_rating
+        - overall_rating
       properties:
         age:
           type: integer
@@ -635,48 +669,82 @@ components:
           type: string
         zipcode:
           type: string
-        overall_health_rating:
+        overall_rating:
           type: string
           enum: [ excellent, very good, good, fair, poor ]
         body_weight:
           type: number
           description: Body weight in pounds
         troubled_with_pain:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         job:
           type: string
         arthritis:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         cognitive_limitation:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         depression:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         emotional_problems:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         marry:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "married"
         smoke:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         heart_condition:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         high_cholesterol:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         diabetes:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         high_blood_pressure:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         stroke:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         lung_condition:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         alzheimers:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         dementia:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         cancer:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         drink_alcohol:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         body_height_in:
           type: number
           description: Body height in inches
@@ -690,56 +758,96 @@ components:
       properties:
         zipcode:
           type: string
+        age:
+          type: integer
+          description: >-
+            Not used by the underlying model (only zipcode affects the result),
+            but the query Lambda's own validation rejects the request without it.
+        gender:
+          type: string
+          description: >-
+            Not used by the underlying model (only zipcode affects the result),
+            but the query Lambda's own validation rejects the request without it.
+        overall_rating:
+          type: string
+          enum: [ excellent, very good, good, fair, poor ]
+          description: >-
+            Not used by the underlying model (only zipcode affects the result),
+            but the query Lambda's own validation rejects the request without it.
     LtcDurationInput:
       type: object
       required:
         - gender
-        - overall_health_rating
+        - overall_rating
       properties:
         gender:
           type: string
-        overall_health_rating:
+        overall_rating:
           type: string
           enum: [ excellent, very good, good, fair, poor ]
         n_samples:
           type: integer
         marry:
-          type: boolean
+          type: string
+          description: "Accepted values: married, single, or empty string if unknown"
+          example: "married"
         income:
           type: number
-        overall_rating:
-          type: string
         alzheimers:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         arthritis:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         troubled_with_pain:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         heart_condition:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         stroke:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         high_cholesterol:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         high_blood_pressure:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         depression:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         emotional_problems:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         dementia:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         cancer:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         diabetes:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
     LtcLongevityInput:
       type: object
       required:
         - age
         - gender
         - zipcode
-        - overall_health_rating
+        - overall_rating
       properties:
         age:
           type: integer
@@ -747,48 +855,82 @@ components:
           type: string
         zipcode:
           type: string
-        overall_health_rating:
+        overall_rating:
           type: string
           enum: [ excellent, very good, good, fair, poor ]
         body_weight:
           type: number
           description: Body weight in pounds
         troubled_with_pain:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         job:
           type: string
         arthritis:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         cognitive_limitation:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         depression:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         emotional_problems:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         marry:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "married"
         smoke:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         heart_condition:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         high_cholesterol:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         diabetes:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         high_blood_pressure:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         stroke:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         lung_condition:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         alzheimers:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         dementia:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         cancer:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         drink_alcohol:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         body_height_in:
           type: number
           description: Body height in inches
@@ -801,7 +943,7 @@ components:
         - age
         - gender
         - zipcode
-        - overall_health_rating
+        - overall_rating
       properties:
         age:
           type: integer
@@ -809,48 +951,82 @@ components:
           type: string
         zipcode:
           type: string
-        overall_health_rating:
+        overall_rating:
           type: string
           enum: [ excellent, very good, good, fair, poor ]
         body_weight:
           type: number
           description: Body weight in pounds
         troubled_with_pain:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         job:
           type: string
         arthritis:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         cognitive_limitation:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         depression:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         emotional_problems:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         marry:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "married"
         smoke:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         heart_condition:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         high_cholesterol:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         diabetes:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         high_blood_pressure:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         stroke:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         lung_condition:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         alzheimers:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         dementia:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         cancer:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         drink_alcohol:
-          type: boolean
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
         body_height_in:
           type: number
           description: Body height in inches
