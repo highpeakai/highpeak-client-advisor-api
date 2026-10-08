@@ -306,6 +306,8 @@ components:
   schemas:
     LtcProbabilityInput:
       type: object
+      description: >-
+        All model query endpoints accept the same input template. Fields not listed here are accepted and ignored. Optional fields left out or sent as an empty string are treated as unknown.
       required:
         - age
         - gender
@@ -316,6 +318,8 @@ components:
           type: integer
         gender:
           type: string
+          enum: [ male, female ]
+          description: Lowercase.
         zipcode:
           type: string
         overall_rating:
@@ -348,7 +352,8 @@ components:
           example: "no"
         marry:
           type: string
-          description: "Accepted values: yes, no, or empty string if unknown"
+          enum: [ single, married, "" ]
+          description: "Accepted values: single, married, or empty string if unknown"
           example: "married"
         smoke:
           type: string
@@ -402,6 +407,8 @@ components:
           description: Body height in feet
     LtcTypeInput:
       type: object
+      description: >-
+        All model query endpoints accept the same input template. Fields not listed here are accepted and ignored. Optional fields left out or sent as an empty string are treated as unknown.
       required:
         - age
         - gender
@@ -412,6 +419,8 @@ components:
           type: integer
         gender:
           type: string
+          enum: [ male, female ]
+          description: Lowercase.
         zipcode:
           type: string
         overall_rating:
@@ -444,7 +453,8 @@ components:
           example: "no"
         marry:
           type: string
-          description: "Accepted values: yes, no, or empty string if unknown"
+          enum: [ single, married, "" ]
+          description: "Accepted values: single, married, or empty string if unknown"
           example: "married"
         smoke:
           type: string
@@ -498,43 +508,38 @@ components:
           description: Body height in feet
     LtcCostInput:
       type: object
+      description: >-
+        The cost model only uses zipcode. Other fields of the shared input template are accepted and ignored.
       required:
         - zipcode
       properties:
         zipcode:
           type: string
-        age:
-          type: integer
-          description: >-
-            Not used by the underlying model (only zipcode affects the result),
-            but the query Lambda's own validation rejects the request without it.
-        gender:
-          type: string
-          description: >-
-            Not used by the underlying model (only zipcode affects the result),
-            but the query Lambda's own validation rejects the request without it.
-        overall_rating:
-          type: string
-          enum: [ excellent, very good, good, fair, poor ]
-          description: >-
-            Not used by the underlying model (only zipcode affects the result),
-            but the query Lambda's own validation rejects the request without it.
     LtcDurationInput:
       type: object
+      description: >-
+        All model query endpoints accept the same input template. Fields not listed here are accepted and ignored. Optional fields left out or sent as an empty string are treated as unknown.
       required:
+        - age
         - gender
+        - zipcode
         - overall_rating
       properties:
+        age:
+          type: integer
         gender:
+          type: string
+          enum: [ male, female ]
+          description: Lowercase.
+        zipcode:
           type: string
         overall_rating:
           type: string
           enum: [ excellent, very good, good, fair, poor ]
-        n_samples:
-          type: integer
         marry:
           type: string
-          description: "Accepted values: married, single, or empty string if unknown"
+          enum: [ single, married, "" ]
+          description: "Accepted values: single, married, or empty string if unknown"
           example: "married"
         income:
           type: number
@@ -586,8 +591,14 @@ components:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
           example: "no"
+        lung_condition:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
     LtcLongevityInput:
       type: object
+      description: >-
+        All model query endpoints accept the same input template. Fields not listed here are accepted and ignored. Optional fields left out or sent as an empty string are treated as unknown.
       required:
         - age
         - gender
@@ -598,49 +609,31 @@ components:
           type: integer
         gender:
           type: string
+          enum: [ male, female ]
+          description: Lowercase.
         zipcode:
           type: string
         overall_rating:
           type: string
           enum: [ excellent, very good, good, fair, poor ]
-        body_weight:
-          type: number
-          description: Body weight in pounds
-        troubled_with_pain:
-          type: string
-          description: "Accepted values: yes, no, or empty string if unknown"
-          example: "no"
         job:
           type: string
-        arthritis:
-          type: string
-          description: "Accepted values: yes, no, or empty string if unknown"
-          example: "no"
-        cognitive_limitation:
-          type: string
-          description: "Accepted values: yes, no, or empty string if unknown"
-          example: "no"
-        depression:
-          type: string
-          description: "Accepted values: yes, no, or empty string if unknown"
-          example: "no"
-        emotional_problems:
-          type: string
-          description: "Accepted values: yes, no, or empty string if unknown"
-          example: "no"
-        marry:
-          type: string
-          description: "Accepted values: yes, no, or empty string if unknown"
-          example: "married"
         smoke:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
           example: "no"
-        heart_condition:
-          type: string
-          description: "Accepted values: yes, no, or empty string if unknown"
-          example: "no"
-        high_cholesterol:
+        body_weight:
+          type: number
+          description: Body weight in pounds
+        body_height_in:
+          type: number
+          description: Body height in inches
+        body_height_ft:
+          type: number
+          description: Body height in feet
+        income:
+          type: number
+        use_drugs:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
           example: "no"
@@ -652,11 +645,23 @@ components:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
           example: "no"
-        stroke:
+        blood_disorder:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        troubled_with_pain:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        arthritis:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
           example: "no"
         lung_condition:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        autoimmune_disorder:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
           example: "no"
@@ -672,18 +677,50 @@ components:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
           example: "no"
-        drink_alcohol:
+        heart_condition:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
           example: "no"
-        body_height_in:
-          type: number
-          description: Body height in inches
-        body_height_ft:
-          type: number
-          description: Body height in feet
+        stroke:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        high_cholesterol:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        cyst_polyp:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        liver_disease:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        depression:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        emotional_problems:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        renal:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        STD:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
+        surgery:
+          type: string
+          description: "Accepted values: yes, no, or empty string if unknown"
+          example: "no"
     LtcHealthcareCostInput:
       type: object
+      description: >-
+        All model query endpoints accept the same input template. Fields not listed here are accepted and ignored. Optional fields left out or sent as an empty string are treated as unknown.
       required:
         - age
         - gender
@@ -694,6 +731,8 @@ components:
           type: integer
         gender:
           type: string
+          enum: [ male, female ]
+          description: Lowercase.
         zipcode:
           type: string
         overall_rating:
@@ -726,7 +765,8 @@ components:
           example: "no"
         marry:
           type: string
-          description: "Accepted values: yes, no, or empty string if unknown"
+          enum: [ single, married, "" ]
+          description: "Accepted values: single, married, or empty string if unknown"
           example: "married"
         smoke:
           type: string
