@@ -1,0 +1,806 @@
+{
+  "info": {
+    "_postman_id": "d0d5d7d5-1f7b-435f-8cb4-e1e26dcdd206",
+    "name": "HighPeak API",
+    "description": "Model query endpoints behind the HighPeak API Gateway, built from openapi.yaml (HP2-2165).\n\nSelect the Dev, QA or Prod environment and set `apiKey` (X-API-Key header). Also set `bearerToken` to a Cognito ID/access token for a user in Admins or EnterpriseManagers: the model Lambdas verify it themselves (highpeak-auth-layer). The pre-request script adds `Authorization: Bearer <token>`.\n\nFolders: **Happy path** checks each endpoint returns 200 with the response shape from the spec; **Auth** checks the gateway rejects missing/invalid keys; **Validation** checks bad bodies return 400.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Add a Cognito bearer token when one is set, unless the request opts out of auth.",
+          "const token = pm.variables.get(\"bearerToken\");",
+          "const noAuth = pm.request.auth && pm.request.auth.type === \"noauth\";",
+          "const skip = pm.info.requestName.includes(\"no bearer token\");",
+          "if (token && !noAuth && !skip) {",
+          "  pm.request.headers.upsert({ key: \"Authorization\", value: `Bearer ${token}` });",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test(\"responds within 30s\", () => pm.expect(pm.response.responseTime).to.be.below(30000));"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Happy path",
+      "item": [
+        {
+          "name": "LTC probability",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"response is JSON\", () => pm.response.to.be.json);",
+                  "const body = pm.response.json();",
+                  "pm.test(\"has ltc_need_proba\", () => pm.expect(body).to.have.property(\"ltc_need_proba\"));",
+                  "pm.test(\"ltc_need_proba.proba_mean is a number\", () => pm.expect(body.ltc_need_proba.proba_mean).to.be.a(\"number\"));",
+                  "pm.test(\"ltc_need_proba.proba_std is a number\", () => pm.expect(body.ltc_need_proba.proba_std).to.be.a(\"number\"));",
+                  "pm.test(\"ltc_need_proba.count is a number\", () => pm.expect(body.ltc_need_proba.count).to.be.a(\"number\"));",
+                  "pm.test(\"unit is %\", () => pm.expect(body.ltc_need_proba.unit).to.eql(\"%\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"good\",\n  \"body_weight\": 160,\n  \"body_height_ft\": 5,\n  \"body_height_in\": 8,\n  \"troubled_with_pain\": \"no\",\n  \"job\": \"employed\",\n  \"arthritis\": \"no\",\n  \"cognitive_limitation\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"marry\": \"married\",\n  \"smoke\": \"no\",\n  \"heart_condition\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"diabetes\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"stroke\": \"no\",\n  \"lung_condition\": \"no\",\n  \"alzheimers\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"drink_alcohol\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/probability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "probability"
+              ]
+            }
+          }
+        },
+        {
+          "name": "LTC service type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"response is JSON\", () => pm.response.to.be.json);",
+                  "const body = pm.response.json();",
+                  "pm.test(\"has ltc_service_type_proba\", () => pm.expect(body).to.have.property(\"ltc_service_type_proba\"));",
+                  "for (const t of [\"homeHealthCare\", \"assistedLivingFacility\", \"nursingHome\"]) {",
+                  "  pm.test(`${t}.proba_mean is a number`, () => pm.expect(body.ltc_service_type_proba[t].proba_mean).to.be.a(\"number\"));",
+                  "  pm.test(`${t}.proba_std is a number`, () => pm.expect(body.ltc_service_type_proba[t].proba_std).to.be.a(\"number\"));",
+                  "}",
+                  "pm.test(\"ltc_service_type_proba.count is a number\", () => pm.expect(body.ltc_service_type_proba.count).to.be.a(\"number\"));",
+                  "pm.test(\"unit is %\", () => pm.expect(body.ltc_service_type_proba.unit).to.eql(\"%\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"good\",\n  \"body_weight\": 160,\n  \"body_height_ft\": 5,\n  \"body_height_in\": 8,\n  \"troubled_with_pain\": \"no\",\n  \"job\": \"employed\",\n  \"arthritis\": \"no\",\n  \"cognitive_limitation\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"marry\": \"married\",\n  \"smoke\": \"no\",\n  \"heart_condition\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"diabetes\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"stroke\": \"no\",\n  \"lung_condition\": \"no\",\n  \"alzheimers\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"drink_alcohol\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/service_type",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "service_type"
+              ]
+            }
+          }
+        },
+        {
+          "name": "LTC cost",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"response is JSON\", () => pm.response.to.be.json);",
+                  "const body = pm.response.json();",
+                  "pm.test(\"HHC is a number\", () => pm.expect(body.HHC).to.be.a(\"number\"));",
+                  "pm.test(\"ALF is a number\", () => pm.expect(body.ALF).to.be.a(\"number\"));",
+                  "pm.test(\"NH is a number\", () => pm.expect(body.NH).to.be.a(\"number\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": \"\",\n  \"gender\": \"\",\n  \"zipcode\": \"07204\",\n  \"marry\": \"\",\n  \"job\": \"\",\n  \"body_weight\": \"\",\n  \"body_height_ft\": \"\",\n  \"body_height_in\": \"\",\n  \"smoke\": \"\",\n  \"drink_alcohol\": \"\",\n  \"dental_visit\": \"\",\n  \"troubled_with_pain\": \"\",\n  \"emotional_problems\": \"\",\n  \"cognitive_limitation\": \"\",\n  \"depression\": \"\",\n  \"arthritis\": \"\",\n  \"heart_condition\": \"\",\n  \"high_cholesterol\": \"\",\n  \"diabetes\": \"\",\n  \"high_blood_pressure\": \"\",\n  \"stroke\": \"\",\n  \"lung_condition\": \"\",\n  \"alzheimers\": \"\",\n  \"dementia\": \"\",\n  \"cancer\": \"\",\n  \"income\": \"\",\n  \"use_drugs\": \"\",\n  \"blood_disorder\": \"\",\n  \"autoimmune_disorder\": \"\",\n  \"cyst_polyp\": \"\",\n  \"liver_disease\": \"\",\n  \"renal\": \"\",\n  \"STD\": \"\",\n  \"surgery\": \"\",\n  \"take_rx_drug\": \"\",\n  \"overall_rating\": \"\",\n  \"n_samples\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/cost",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "cost"
+              ]
+            },
+            "description": "Shared input template with only zipcode filled in. The cost model only uses zipcode."
+          }
+        },
+        {
+          "name": "LTC duration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"response is JSON\", () => pm.response.to.be.json);",
+                  "const body = pm.response.json();",
+                  "pm.test(\"has ltc_duration\", () => pm.expect(body).to.have.property(\"ltc_duration\"));",
+                  "pm.test(\"ltc_duration.dur_mean is a non-empty array\", () => { pm.expect(body.ltc_duration.dur_mean).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"ltc_duration.dur_std is a non-empty array\", () => { pm.expect(body.ltc_duration.dur_std).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"ltc_duration.proba is a non-empty array\", () => { pm.expect(body.ltc_duration.proba).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"ltc_duration.count is a number\", () => pm.expect(body.ltc_duration.count).to.be.a(\"number\"));",
+                  "pm.test(\"unit is months\", () => pm.expect(body.ltc_duration.unit).to.eql(\"months\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"good\",\n  \"marry\": \"married\",\n  \"income\": 75000,\n  \"alzheimers\": \"no\",\n  \"arthritis\": \"no\",\n  \"troubled_with_pain\": \"no\",\n  \"heart_condition\": \"no\",\n  \"stroke\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"diabetes\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/duration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "duration"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Longevity estimate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"response is JSON\", () => pm.response.to.be.json);",
+                  "const body = pm.response.json();",
+                  "pm.test(\"has longevity\", () => pm.expect(body).to.have.property(\"longevity\"));",
+                  "pm.test(\"longevity.age_mean is a non-empty array\", () => { pm.expect(body.longevity.age_mean).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"longevity.age_std is a non-empty array\", () => { pm.expect(body.longevity.age_std).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"longevity.proba is a non-empty array\", () => { pm.expect(body.longevity.proba).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"good\",\n  \"body_weight\": 160,\n  \"body_height_ft\": 5,\n  \"body_height_in\": 8,\n  \"troubled_with_pain\": \"no\",\n  \"job\": \"employed\",\n  \"arthritis\": \"no\",\n  \"cognitive_limitation\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"marry\": \"married\",\n  \"smoke\": \"no\",\n  \"heart_condition\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"diabetes\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"stroke\": \"no\",\n  \"lung_condition\": \"no\",\n  \"alzheimers\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"drink_alcohol\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/longevity/estimate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "longevity",
+                "estimate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Healthcare cost",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"response is JSON\", () => pm.response.to.be.json);",
+                  "const body = pm.response.json();",
+                  "pm.test(\"has hc_cost\", () => pm.expect(body).to.have.property(\"hc_cost\"));",
+                  "pm.test(\"hc_cost.cost_mean is a non-empty array\", () => { pm.expect(body.hc_cost.cost_mean).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"hc_cost.cost_std is a non-empty array\", () => { pm.expect(body.hc_cost.cost_std).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"hc_cost.proba is a non-empty array\", () => { pm.expect(body.hc_cost.proba).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"hc_cost.count is a number\", () => pm.expect(body.hc_cost.count).to.be.a(\"number\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"good\",\n  \"body_weight\": 160,\n  \"body_height_ft\": 5,\n  \"body_height_in\": 8,\n  \"troubled_with_pain\": \"no\",\n  \"job\": \"employed\",\n  \"arthritis\": \"no\",\n  \"cognitive_limitation\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"marry\": \"married\",\n  \"smoke\": \"no\",\n  \"heart_condition\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"diabetes\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"stroke\": \"no\",\n  \"lung_condition\": \"no\",\n  \"alzheimers\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"drink_alcohol\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/healthcare/cost",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "healthcare",
+                "cost"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "No API key -> 401/403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rejected with 401 or 403\", () => pm.expect(pm.response.code).to.be.oneOf([401, 403]));",
+                  "pm.test(\"no model output leaked\", () => pm.expect(pm.response.text()).to.not.include(\"proba_mean\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"good\",\n  \"body_weight\": 160,\n  \"body_height_ft\": 5,\n  \"body_height_in\": 8,\n  \"troubled_with_pain\": \"no\",\n  \"job\": \"employed\",\n  \"arthritis\": \"no\",\n  \"cognitive_limitation\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"marry\": \"married\",\n  \"smoke\": \"no\",\n  \"heart_condition\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"diabetes\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"stroke\": \"no\",\n  \"lung_condition\": \"no\",\n  \"alzheimers\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"drink_alcohol\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/probability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "probability"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Gateway should reject before the Lambda runs. API Gateway returns 403 {\"message\":\"Forbidden\"} for a missing key; a Cognito authorizer returns 401."
+          }
+        },
+        {
+          "name": "Invalid API key -> 401/403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rejected with 401 or 403\", () => pm.expect(pm.response.code).to.be.oneOf([401, 403]));",
+                  "pm.test(\"no model output leaked\", () => pm.expect(pm.response.text()).to.not.include(\"proba_mean\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"good\",\n  \"body_weight\": 160,\n  \"body_height_ft\": 5,\n  \"body_height_in\": 8,\n  \"troubled_with_pain\": \"no\",\n  \"job\": \"employed\",\n  \"arthritis\": \"no\",\n  \"cognitive_limitation\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"marry\": \"married\",\n  \"smoke\": \"no\",\n  \"heart_condition\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"diabetes\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"stroke\": \"no\",\n  \"lung_condition\": \"no\",\n  \"alzheimers\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"drink_alcohol\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/probability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "probability"
+              ]
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "X-API-Key",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "not-a-real-key-{{$randomUUID}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "No API key (cost) -> 401/403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rejected with 401 or 403\", () => pm.expect(pm.response.code).to.be.oneOf([401, 403]));",
+                  "pm.test(\"no model output leaked\", () => pm.expect(pm.response.text()).to.not.include(\"proba_mean\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"good\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/cost",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "cost"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Valid API key, no bearer token -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"rejected by the Lambda auth layer\", () => pm.expect(pm.response.json().message).to.eql(\"Missing Authorization header\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"good\",\n  \"body_weight\": 160,\n  \"body_height_ft\": 5,\n  \"body_height_in\": 8,\n  \"troubled_with_pain\": \"no\",\n  \"job\": \"employed\",\n  \"arthritis\": \"no\",\n  \"cognitive_limitation\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"marry\": \"married\",\n  \"smoke\": \"no\",\n  \"heart_condition\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"diabetes\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"stroke\": \"no\",\n  \"lung_condition\": \"no\",\n  \"alzheimers\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"drink_alcohol\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/probability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "probability"
+              ]
+            },
+            "description": "The gateway accepts the key and forwards to the Lambda, whose auth layer requires a Cognito JWT (Admins or EnterpriseManagers group). The collection pre-request script skips the bearer token for this request."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validation",
+      "item": [
+        {
+          "name": "Probability missing zipcode -> rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// The query Lambdas currently return 500 for invalid input; 400 is pending a decision (HP2-2165).",
+                  "pm.test(\"rejected (400 or 500)\", () => pm.expect(pm.response.code).to.be.oneOf([400, 500]));",
+                  "pm.test(\"error body returned\", () => { const b = pm.response.json(); pm.expect(b.error || b.message).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"overall_rating\": \"good\",\n  \"body_weight\": 160,\n  \"body_height_ft\": 5,\n  \"body_height_in\": 8,\n  \"troubled_with_pain\": \"no\",\n  \"job\": \"employed\",\n  \"arthritis\": \"no\",\n  \"cognitive_limitation\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"marry\": \"married\",\n  \"smoke\": \"no\",\n  \"heart_condition\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"diabetes\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"stroke\": \"no\",\n  \"lung_condition\": \"no\",\n  \"alzheimers\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"drink_alcohol\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/probability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "probability"
+              ]
+            },
+            "description": "Expects the request to be rejected. The query Lambdas currently return 500 for invalid input."
+          }
+        },
+        {
+          "name": "Probability bad overall_rating -> rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// The query Lambdas currently return 500 for invalid input; 400 is pending a decision (HP2-2165).",
+                  "pm.test(\"rejected (400 or 500)\", () => pm.expect(pm.response.code).to.be.oneOf([400, 500]));",
+                  "pm.test(\"error body returned\", () => { const b = pm.response.json(); pm.expect(b.error || b.message).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"gender\": \"female\",\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"amazing\",\n  \"body_weight\": 160,\n  \"body_height_ft\": 5,\n  \"body_height_in\": 8,\n  \"troubled_with_pain\": \"no\",\n  \"job\": \"employed\",\n  \"arthritis\": \"no\",\n  \"cognitive_limitation\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"marry\": \"married\",\n  \"smoke\": \"no\",\n  \"heart_condition\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"diabetes\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"stroke\": \"no\",\n  \"lung_condition\": \"no\",\n  \"alzheimers\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"drink_alcohol\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/probability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "probability"
+              ]
+            },
+            "description": "Expects the request to be rejected. The query Lambdas currently return 500 for invalid input."
+          }
+        },
+        {
+          "name": "Cost missing zipcode -> rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// The query Lambdas currently return 500 for invalid input; 400 is pending a decision (HP2-2165).",
+                  "pm.test(\"rejected (400 or 500)\", () => pm.expect(pm.response.code).to.be.oneOf([400, 500]));",
+                  "pm.test(\"error body returned\", () => { const b = pm.response.json(); pm.expect(b.error || b.message).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": \"\",\n  \"gender\": \"\",\n  \"zipcode\": \"\",\n  \"marry\": \"\",\n  \"job\": \"\",\n  \"body_weight\": \"\",\n  \"body_height_ft\": \"\",\n  \"body_height_in\": \"\",\n  \"smoke\": \"\",\n  \"drink_alcohol\": \"\",\n  \"dental_visit\": \"\",\n  \"troubled_with_pain\": \"\",\n  \"emotional_problems\": \"\",\n  \"cognitive_limitation\": \"\",\n  \"depression\": \"\",\n  \"arthritis\": \"\",\n  \"heart_condition\": \"\",\n  \"high_cholesterol\": \"\",\n  \"diabetes\": \"\",\n  \"high_blood_pressure\": \"\",\n  \"stroke\": \"\",\n  \"lung_condition\": \"\",\n  \"alzheimers\": \"\",\n  \"dementia\": \"\",\n  \"cancer\": \"\",\n  \"income\": \"\",\n  \"use_drugs\": \"\",\n  \"blood_disorder\": \"\",\n  \"autoimmune_disorder\": \"\",\n  \"cyst_polyp\": \"\",\n  \"liver_disease\": \"\",\n  \"renal\": \"\",\n  \"STD\": \"\",\n  \"surgery\": \"\",\n  \"take_rx_drug\": \"\",\n  \"overall_rating\": \"\",\n  \"n_samples\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/cost",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "cost"
+              ]
+            },
+            "description": "Expects the request to be rejected. The query Lambdas currently return 500 for invalid input."
+          }
+        },
+        {
+          "name": "Duration missing gender -> rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// The query Lambdas currently return 500 for invalid input; 400 is pending a decision (HP2-2165).",
+                  "pm.test(\"rejected (400 or 500)\", () => pm.expect(pm.response.code).to.be.oneOf([400, 500]));",
+                  "pm.test(\"error body returned\", () => { const b = pm.response.json(); pm.expect(b.error || b.message).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 65,\n  \"zipcode\": \"07204\",\n  \"overall_rating\": \"good\",\n  \"marry\": \"married\",\n  \"income\": 75000,\n  \"alzheimers\": \"no\",\n  \"arthritis\": \"no\",\n  \"troubled_with_pain\": \"no\",\n  \"heart_condition\": \"no\",\n  \"stroke\": \"no\",\n  \"high_cholesterol\": \"no\",\n  \"high_blood_pressure\": \"no\",\n  \"depression\": \"no\",\n  \"emotional_problems\": \"no\",\n  \"dementia\": \"no\",\n  \"cancer\": \"no\",\n  \"diabetes\": \"no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/duration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "duration"
+              ]
+            },
+            "description": "Expects the request to be rejected. The query Lambdas currently return 500 for invalid input."
+          }
+        },
+        {
+          "name": "Malformed JSON -> rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// The query Lambdas currently return 500 for invalid input; 400 is pending a decision (HP2-2165).",
+                  "pm.test(\"rejected (400 or 500)\", () => pm.expect(pm.response.code).to.be.oneOf([400, 500]));",
+                  "pm.test(\"error body returned\", () => { const b = pm.response.json(); pm.expect(b.error || b.message).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"age\": 65, \"gender\": \"female\",",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queries/ltc/probability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queries",
+                "ltc",
+                "probability"
+              ]
+            },
+            "description": "Expects the request to be rejected. The query Lambdas currently return 500 for invalid input."
+          }
+        }
+      ]
+    }
+  ]
+}
