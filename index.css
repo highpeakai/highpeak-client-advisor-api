@@ -15,6 +15,6 @@ body {
   background: #fafafa;
 }
 
-.servers{
-  display: none;!important;
+.schemes-server-container {
+  display: none !important;
 }
