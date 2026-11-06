@@ -3,13 +3,7 @@ info:
   title: HighPeak API
   description: API for long term care model queries.
   version: 1.0.0
-servers:
-  - url: https://api.prod.highpeak.ai
-    description: Production server
-  - url: https://api.qa.highpeak.ai
-    description: QA server
-  - url: https://api.dev.highpeak.ai
-    description: Dev server
+servers: []
 tags:
   - name: LTC Queries
     description: Endpoints for long-term care probability, type, cost, duration, and longevity predictions
@@ -270,7 +264,8 @@ paths:
                         type: array
                         items:
                           type: number
-                        example: [560, 1170, 1870, 2690, 3640, 4810, 6320, 8450, 12080]
+                        example:
+                          [560, 1170, 1870, 2690, 3640, 4810, 6320, 8450, 12080]
                       cost_std:
                         type: array
                         items:
@@ -293,7 +288,7 @@ components:
     api_key:
       type: apiKey
       in: header
-      name: X-API-Key   # the header name users will send
+      name: X-API-Key # the header name users will send
 
   parameters:
     X-Custom-Header:
@@ -316,15 +311,18 @@ components:
       properties:
         age:
           type: integer
+          minimum: 18
+          maximum: 80
+          example: 18
         gender:
           type: string
-          enum: [ male, female ]
+          enum: [male, female]
           description: Lowercase.
         zipcode:
           type: string
         overall_rating:
           type: string
-          enum: [ excellent, very good, good, fair, poor ]
+          enum: [excellent, very good, good, fair, poor]
         body_weight:
           type: number
           description: Body weight in pounds
@@ -334,6 +332,9 @@ components:
           example: "no"
         job:
           type: string
+          enum: [unemployed, employed, retired, disabled, ""]
+          example: "employed"
+          description: "Accepted values: unemployed, employed, retired, disabled, or empty string if unknown"
         arthritis:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
@@ -352,7 +353,7 @@ components:
           example: "no"
         marry:
           type: string
-          enum: [ single, married, "" ]
+          enum: [single, married, ""]
           description: "Accepted values: single, married, or empty string if unknown"
           example: "married"
         smoke:
@@ -417,15 +418,18 @@ components:
       properties:
         age:
           type: integer
+          minimum: 18
+          maximum: 80
+          example: 18
         gender:
           type: string
-          enum: [ male, female ]
+          enum: [male, female]
           description: Lowercase.
         zipcode:
           type: string
         overall_rating:
           type: string
-          enum: [ excellent, very good, good, fair, poor ]
+          enum: [excellent, very good, good, fair, poor]
         body_weight:
           type: number
           description: Body weight in pounds
@@ -435,6 +439,9 @@ components:
           example: "no"
         job:
           type: string
+          enum: [unemployed, employed, retired, disabled, ""]
+          example: "employed"
+          description: "Accepted values: unemployed, employed, retired, disabled, or empty string if unknown"
         arthritis:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
@@ -453,7 +460,7 @@ components:
           example: "no"
         marry:
           type: string
-          enum: [ single, married, "" ]
+          enum: [single, married, ""]
           description: "Accepted values: single, married, or empty string if unknown"
           example: "married"
         smoke:
@@ -527,18 +534,21 @@ components:
       properties:
         age:
           type: integer
+          minimum: 18
+          maximum: 80
+          example: 18
         gender:
           type: string
-          enum: [ male, female ]
+          enum: [male, female]
           description: Lowercase.
         zipcode:
           type: string
         overall_rating:
           type: string
-          enum: [ excellent, very good, good, fair, poor ]
+          enum: [excellent, very good, good, fair, poor]
         marry:
           type: string
-          enum: [ single, married, "" ]
+          enum: [single, married, ""]
           description: "Accepted values: single, married, or empty string if unknown"
           example: "married"
         income:
@@ -607,17 +617,23 @@ components:
       properties:
         age:
           type: integer
+          minimum: 18
+          maximum: 80
+          example: 18
         gender:
           type: string
-          enum: [ male, female ]
+          enum: [male, female]
           description: Lowercase.
         zipcode:
           type: string
         overall_rating:
           type: string
-          enum: [ excellent, very good, good, fair, poor ]
+          enum: [excellent, very good, good, fair, poor]
         job:
           type: string
+          enum: [unemployed, employed, retired, disabled, ""]
+          example: "employed"
+          description: "Accepted values: unemployed, employed, retired, disabled, or empty string if unknown"
         smoke:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
@@ -729,15 +745,18 @@ components:
       properties:
         age:
           type: integer
+          minimum: 18
+          maximum: 80
+          example: 18
         gender:
           type: string
-          enum: [ male, female ]
+          enum: [male, female]
           description: Lowercase.
         zipcode:
           type: string
         overall_rating:
           type: string
-          enum: [ excellent, very good, good, fair, poor ]
+          enum: [excellent, very good, good, fair, poor]
         body_weight:
           type: number
           description: Body weight in pounds
@@ -747,6 +766,9 @@ components:
           example: "no"
         job:
           type: string
+          enum: [unemployed, employed, retired, disabled, ""]
+          example: "employed"
+          description: "Accepted values: unemployed, employed, retired, disabled, or empty string if unknown"
         arthritis:
           type: string
           description: "Accepted values: yes, no, or empty string if unknown"
@@ -765,7 +787,7 @@ components:
           example: "no"
         marry:
           type: string
-          enum: [ single, married, "" ]
+          enum: [single, married, ""]
           description: "Accepted values: single, married, or empty string if unknown"
           example: "married"
         smoke:
