@@ -332,7 +332,6 @@ components:
           example: "no"
         job:
           type: string
-          enum: [unemployed, employed, retired, disabled, ""]
           example: "employed"
           description: "Accepted values: unemployed, employed, retired, disabled, or empty string if unknown"
         arthritis:
@@ -439,7 +438,6 @@ components:
           example: "no"
         job:
           type: string
-          enum: [unemployed, employed, retired, disabled, ""]
           example: "employed"
           description: "Accepted values: unemployed, employed, retired, disabled, or empty string if unknown"
         arthritis:
@@ -631,7 +629,6 @@ components:
           enum: [excellent, very good, good, fair, poor]
         job:
           type: string
-          enum: [unemployed, employed, retired, disabled, ""]
           example: "employed"
           description: "Accepted values: unemployed, employed, retired, disabled, or empty string if unknown"
         smoke:
@@ -766,7 +763,6 @@ components:
           example: "no"
         job:
           type: string
-          enum: [unemployed, employed, retired, disabled, ""]
           example: "employed"
           description: "Accepted values: unemployed, employed, retired, disabled, or empty string if unknown"
         arthritis:
