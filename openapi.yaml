@@ -60,7 +60,7 @@ paths:
       tags: [LTC Queries]
       summary: Estimate long-term care need probability
       description: |
-        Estimates the chance (%) that the person will need long-term care.
+        This endpoint provides insight into the probability that an individual will need long term care / critical illness care, given the inputs provided. The proba_std field is optional to use and should be read with context: it is the variation expected at one standard deviation. That is, with a mean of X, the expected variation is ± proba_std.
 
         **Required:** `age`, `gender`, `zipcode`, `overall_rating`. Optional health and lifestyle fields refine the estimate.
       operationId: queryProbability
@@ -145,7 +145,7 @@ paths:
       tags: [LTC Queries]
       summary: Estimate long-term care service type probabilities
       description: |
-        Estimates which type of long-term care the person is most likely to use: home health care, assisted living facility or nursing home.
+        This endpoint provides insight into the long term care / critical illness care service types that our models predict an individual will require, given the inputs. The output lists three service types (Assisted Living Facility, Home Health Care and Nursing Home) with the probability of needing each.
 
         **Required:** `age`, `gender`, `zipcode`, `overall_rating`. Optional health and lifestyle fields refine the estimate.
       operationId: queryServiceType
@@ -251,7 +251,7 @@ paths:
       tags: [LTC Queries]
       summary: Estimate long-term care costs by facility type
       description: |
-        Returns the monthly cost of each type of long-term care for the state the ZIP code is in.
+        This endpoint provides insight into the average monthly long term care / critical illness care cost for a given zip code, where HHC = Home Health Care, ALF = Assisted Living Facility and NH = Nursing Home.
 
         **Required:** `zipcode`. Other fields are accepted and ignored.
       operationId: queryCost
@@ -302,7 +302,7 @@ paths:
       tags: [LTC Queries]
       summary: Estimate long-term care duration
       description: |
-        Estimates how long the person would need long-term care.
+        This endpoint represents the long term care / critical illness care duration for an individual, given the inputs. The dur_mean field is the mean at each corresponding probability in the proba list, and dur_std is the variation at one standard deviation of that mean. For example, the individual is 90% likely to need an average of 13 months of long term care, with a variance of ±5 months (one standard deviation).
 
         **Required:** `age`, `gender`, `zipcode`, `overall_rating`. Optional fields refine the estimate.
       operationId: queryDuration
@@ -386,7 +386,7 @@ paths:
       tags: [LTC Queries]
       summary: Estimate longevity distribution
       description: |
-        Estimates how long the person is likely to live.
+        This endpoint represents the predicted longevity for an individual, given the inputs. The age_mean field is the mean age at each corresponding probability in the proba list, and age_std is the variation at one standard deviation of that mean. For example, the individual is 90% likely to live at least until the age of 74, with a variance of ±2 years (one standard deviation).
 
         **Required:** `age`, `gender`, `zipcode`, `overall_rating`. Optional health and lifestyle fields refine the estimate.
       operationId: queryLongevity
@@ -468,7 +468,7 @@ paths:
       tags: [LTC Queries]
       summary: Estimate healthcare cost distribution
       description: |
-        Estimates the person's healthcare costs.
+        This endpoint represents the predicted healthcare costs for an individual, given the inputs. The cost_mean field is the mean cost at each corresponding probability in the proba list, and cost_std is the variation at one standard deviation of that mean. For example, the individual is 90% likely to incur $560 per month on average, with a variance of ±$30 (one standard deviation).
 
         **Required:** `age`, `gender`, `zipcode`, `overall_rating`. Optional health and lifestyle fields refine the estimate.
       operationId: queryHealthcareCost
