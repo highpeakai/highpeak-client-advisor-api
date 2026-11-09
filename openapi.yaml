@@ -1,7 +1,49 @@
 openapi: 3.0.3
 info:
   title: HighPeak API
-  description: API for long term care model queries.
+  description: |
+    Long-term care (LTC), longevity and healthcare cost estimates from HighPeak's models.
+
+    ## Getting started
+    Your base URL, API key and account are provided during onboarding. All endpoints are `POST` requests with a JSON body.
+
+    ## Authentication
+    Every request needs **both** headers:
+
+    | Header | Value |
+    | --- | --- |
+    | `X-API-Key` | Your API key |
+    | `Authorization` | `Bearer <access token>` for your HighPeak account with API access |
+
+    A missing or invalid API key returns **403**. A missing, expired or invalid access token returns **401**. Access tokens expire after about an hour.
+
+    ## Request body
+    All endpoints accept the same input template, so you can send one body to every endpoint.
+    - **Required fields** must be present and non-empty. They differ by endpoint (see each endpoint).
+    - **Optional fields** can be left out or sent as an empty string (`""`). They're treated as unknown, and the models estimate them from people with a similar profile. The more you provide, the more specific the estimate.
+    - **Fields an endpoint doesn't use** are ignored.
+    - Text values are **lowercase**, for example `"female"`, `"very good"`, `"no"`.
+    - **Use only the values listed for each field.** Unrecognized values in optional fields aren't rejected; they're replaced with default values, which changes the estimate.
+
+    | Endpoint | Required fields |
+    | --- | --- |
+    | `/queries/ltc/probability` | `age`, `gender`, `zipcode`, `overall_rating` |
+    | `/queries/ltc/service_type` | `age`, `gender`, `zipcode`, `overall_rating` |
+    | `/queries/ltc/cost` | `zipcode` |
+    | `/queries/ltc/duration` | `age`, `gender`, `zipcode`, `overall_rating` |
+    | `/queries/longevity/estimate` | `age`, `gender`, `zipcode`, `overall_rating` |
+    | `/queries/healthcare/cost` | `age`, `gender`, `zipcode`, `overall_rating` |
+
+    ## Errors
+    | Status | Meaning |
+    | --- | --- |
+    | 400 | Invalid request: malformed JSON, a missing required field, or a value that can't be used. The `message` says what's wrong. |
+    | 401 | Missing, expired or invalid access token |
+    | 403 | Missing or invalid API key, or account not permitted |
+    | 429 | Rate limit or monthly quota for your API key exceeded |
+    | 500 | The estimate couldn't be generated. Retry, and contact HighPeak if it persists. |
+
+    Error responses have the form `{"message": "..."}`.
   version: 1.0.0
 servers: []
 tags:
@@ -10,13 +52,17 @@ tags:
 
 security:
   - api_key: []
+    bearer_token: []
 
 paths:
   /queries/ltc/probability:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care need probability
-      description: Predicts the probability of needing long-term care.
+      description: |
+        Estimates the chance (%) that the person will need long-term care.
+
+        **Required:** `age`, `gender`, `zipcode`, `overall_rating`. Optional health and lifestyle fields refine the estimate.
       operationId: queryProbability
       requestBody:
         required: true
@@ -24,9 +70,46 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/LtcProbabilityInput"
+            examples:
+              minimum:
+                summary: Required fields only
+                value:
+                  age: 65
+                  gender: "female"
+                  zipcode: "07204"
+                  overall_rating: "good"
+              detailed:
+                summary: Required fields plus health and lifestyle
+                value:
+                  age: 65
+                  gender: "female"
+                  zipcode: "07204"
+                  overall_rating: "good"
+                  body_weight: 160
+                  body_height_ft: 5
+                  body_height_in: 8
+                  job: "retired"
+                  marry: "married"
+                  smoke: "no"
+                  drink_alcohol: "no"
+                  troubled_with_pain: "no"
+                  arthritis: "yes"
+                  high_blood_pressure: "yes"
+                  high_cholesterol: "no"
+                  diabetes: "no"
+                  heart_condition: "no"
+                  stroke: "no"
+                  lung_condition: "no"
+                  cancer: "no"
+                  alzheimers: "no"
+                  dementia: "no"
+                  depression: "no"
+                  emotional_problems: "no"
+                  cognitive_limitation: "no"
       responses:
         "200":
-          description: Predicted probability distribution for long-term care
+          description: >-
+            `proba_mean` is the estimated chance (%) of needing long-term care, and `proba_std` is how much that varies across the simulated scenarios. `count` is the number of scenarios used to fill in unanswered inputs.
           content:
             application/json:
               schema:
@@ -48,14 +131,23 @@ paths:
                         type: string
                         example: "%"
         "400":
-          description: Invalid request body
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "500":
-          description: Internal server error
+          $ref: "#/components/responses/ServerError"
   /queries/ltc/service_type:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care service type probabilities
-      description: Predicts probabilities for different types of long-term care services.
+      description: |
+        Estimates which type of long-term care the person is most likely to use: home health care, assisted living facility or nursing home.
+
+        **Required:** `age`, `gender`, `zipcode`, `overall_rating`. Optional health and lifestyle fields refine the estimate.
       operationId: queryServiceType
       requestBody:
         required: true
@@ -63,9 +155,46 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/LtcTypeInput"
+            examples:
+              minimum:
+                summary: Required fields only
+                value:
+                  age: 65
+                  gender: "female"
+                  zipcode: "07204"
+                  overall_rating: "good"
+              detailed:
+                summary: Required fields plus health and lifestyle
+                value:
+                  age: 65
+                  gender: "female"
+                  zipcode: "07204"
+                  overall_rating: "good"
+                  body_weight: 160
+                  body_height_ft: 5
+                  body_height_in: 8
+                  job: "retired"
+                  marry: "married"
+                  smoke: "no"
+                  drink_alcohol: "no"
+                  troubled_with_pain: "no"
+                  arthritis: "yes"
+                  high_blood_pressure: "yes"
+                  high_cholesterol: "no"
+                  diabetes: "no"
+                  heart_condition: "no"
+                  stroke: "no"
+                  lung_condition: "no"
+                  cancer: "no"
+                  alzheimers: "no"
+                  dementia: "no"
+                  depression: "no"
+                  emotional_problems: "no"
+                  cognitive_limitation: "no"
       responses:
         "200":
-          description: Predicted service type distribution for long-term care
+          description: >-
+            For each care type, `proba_mean` is the chance (%) it's the type of care used and `proba_std` is how much that varies across the simulated scenarios.
           content:
             application/json:
               schema:
@@ -108,14 +237,23 @@ paths:
                         type: string
                         example: "%"
         "400":
-          description: Invalid request body
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "500":
-          description: Internal server error
+          $ref: "#/components/responses/ServerError"
   /queries/ltc/cost:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care costs by facility type
-      description: Returns the monthly cost of home health care, assisted living, and nursing home care for the user's location.
+      description: |
+        Returns the monthly cost of each type of long-term care for the state the ZIP code is in.
+
+        **Required:** `zipcode`. Other fields are accepted and ignored.
       operationId: queryCost
       requestBody:
         required: true
@@ -123,9 +261,15 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/LtcCostInput"
+            examples:
+              minimum:
+                summary: ZIP code only
+                value:
+                  zipcode: "10010"
       responses:
         "200":
-          description: Monthly cost by long-term care service type
+          description: >-
+            Monthly cost in US dollars: `HHC` home health care, `ALF` assisted living facility, `NH` nursing home.
           content:
             application/json:
               schema:
@@ -144,14 +288,23 @@ paths:
                     description: Nursing Home monthly cost
                     example: 12159.0
         "400":
-          description: Invalid request body
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "500":
-          description: Internal server error
+          $ref: "#/components/responses/ServerError"
   /queries/ltc/duration:
     post:
       tags: [LTC Queries]
       summary: Estimate long-term care duration
-      description: Predicts the duration of long-term care usage.
+      description: |
+        Estimates how long the person would need long-term care.
+
+        **Required:** `age`, `gender`, `zipcode`, `overall_rating`. Optional fields refine the estimate.
       operationId: queryDuration
       requestBody:
         required: true
@@ -159,9 +312,36 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/LtcDurationInput"
+            examples:
+              minimum:
+                summary: Required fields only
+                value:
+                  age: 65
+                  gender: "female"
+                  zipcode: "07204"
+                  overall_rating: "good"
+              detailed:
+                summary: Required fields plus health and income
+                value:
+                  age: 65
+                  gender: "female"
+                  zipcode: "07204"
+                  overall_rating: "good"
+                  marry: "married"
+                  income: 75000
+                  arthritis: "yes"
+                  high_blood_pressure: "yes"
+                  heart_condition: "no"
+                  stroke: "no"
+                  diabetes: "no"
+                  cancer: "no"
+                  alzheimers: "no"
+                  dementia: "no"
+                  lung_condition: "no"
       responses:
         "200":
-          description: Predicted duration distribution for long-term care
+          description: >-
+            The arrays line up by position: there's a `proba[i]`% chance of needing care for more than `dur_mean[i]` months (± `dur_std[i]`). For example, `proba[0] = 90` and `dur_mean[0] = 13` means a 90% chance of needing care for more than 13 months.
           content:
             application/json:
               schema:
@@ -192,14 +372,23 @@ paths:
                         type: string
                         example: "months"
         "400":
-          description: Invalid request body
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "500":
-          description: Internal server error
+          $ref: "#/components/responses/ServerError"
   /queries/longevity/estimate:
     post:
       tags: [LTC Queries]
       summary: Estimate longevity distribution
-      description: Predicts age-based longevity probabilities.
+      description: |
+        Estimates how long the person is likely to live.
+
+        **Required:** `age`, `gender`, `zipcode`, `overall_rating`. Optional health and lifestyle fields refine the estimate.
       operationId: queryLongevity
       requestBody:
         required: true
@@ -207,9 +396,40 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/LtcLongevityInput"
+            examples:
+              minimum:
+                summary: Required fields only
+                value:
+                  age: 65
+                  gender: "female"
+                  zipcode: "07204"
+                  overall_rating: "good"
+              detailed:
+                summary: Required fields plus health and lifestyle
+                value:
+                  age: 65
+                  gender: "female"
+                  zipcode: "07204"
+                  overall_rating: "good"
+                  body_weight: 160
+                  body_height_ft: 5
+                  body_height_in: 8
+                  job: "retired"
+                  smoke: "no"
+                  income: 75000
+                  use_drugs: "no"
+                  arthritis: "yes"
+                  high_blood_pressure: "yes"
+                  diabetes: "no"
+                  heart_condition: "no"
+                  stroke: "no"
+                  cancer: "no"
+                  renal: "no"
+                  liver_disease: "no"
       responses:
         "200":
-          description: Predicted longevity distribution for long-term care
+          description: >-
+            The arrays line up by position: there's a `proba[i]` chance of living beyond age `age_mean[i]` (± `age_std[i]`). Note that `proba` here is a fraction (0.9 = 90%), not a percentage.
           content:
             application/json:
               schema:
@@ -234,14 +454,23 @@ paths:
                           type: number
                         example: [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
         "400":
-          description: Invalid request body
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "500":
-          description: Internal server error
+          $ref: "#/components/responses/ServerError"
   /queries/healthcare/cost:
     post:
       tags: [LTC Queries]
       summary: Estimate healthcare cost distribution
-      description: Predicted monthly healthcare cost distribution.
+      description: |
+        Estimates the person's healthcare costs.
+
+        **Required:** `age`, `gender`, `zipcode`, `overall_rating`. Optional health and lifestyle fields refine the estimate.
       operationId: queryHealthcareCost
       requestBody:
         required: true
@@ -249,9 +478,46 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/LtcHealthcareCostInput"
+            examples:
+              minimum:
+                summary: Required fields only
+                value:
+                  age: 65
+                  gender: "female"
+                  zipcode: "07204"
+                  overall_rating: "good"
+              detailed:
+                summary: Required fields plus health and lifestyle
+                value:
+                  age: 65
+                  gender: "female"
+                  zipcode: "07204"
+                  overall_rating: "good"
+                  body_weight: 160
+                  body_height_ft: 5
+                  body_height_in: 8
+                  job: "retired"
+                  marry: "married"
+                  smoke: "no"
+                  drink_alcohol: "no"
+                  troubled_with_pain: "no"
+                  arthritis: "yes"
+                  high_blood_pressure: "yes"
+                  high_cholesterol: "no"
+                  diabetes: "no"
+                  heart_condition: "no"
+                  stroke: "no"
+                  lung_condition: "no"
+                  cancer: "no"
+                  alzheimers: "no"
+                  dementia: "no"
+                  depression: "no"
+                  emotional_problems: "no"
+                  cognitive_limitation: "no"
       responses:
         "200":
-          description: Predicted healthcare cost distribution
+          description: >-
+            The arrays line up by position: there's a `proba[i]`% chance of healthcare costs above `cost_mean[i]` US dollars (± `cost_std[i]`).
           content:
             application/json:
               schema:
@@ -280,25 +546,59 @@ paths:
                         type: integer
                         example: 10000
         "400":
-          description: Invalid request body
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "500":
-          description: Internal server error
+          $ref: "#/components/responses/ServerError"
 components:
   securitySchemes:
     api_key:
       type: apiKey
       in: header
-      name: X-API-Key # the header name users will send
+      name: X-API-Key
+      description: API key provided during onboarding.
+    bearer_token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Access token for your HighPeak account with API access. Sent as `Authorization: Bearer <token>`."
 
-  parameters:
-    X-Custom-Header:
-      name: X-Custom-Header
-      in: header
-      description: Arbitrary custom header for testing
-      required: false
-      schema:
-        type: string
+  responses:
+    Unauthorized:
+      description: Missing, expired or invalid access token.
+    Forbidden:
+      description: Missing or invalid API key, or account not permitted.
+    TooManyRequests:
+      description: Rate limit or monthly quota for your API key exceeded.
+    BadRequest:
+      description: >-
+        Invalid request: malformed JSON, a missing required field, or a value that can't be used.
+        The `message` says what's wrong.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "Missing parameters in the request body"
+    ServerError:
+      description: The estimate couldn't be generated. Retry, and contact HighPeak if it persists.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "Problem with invoking request to model."
   schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
     LtcProbabilityInput:
       type: object
       description: >-
